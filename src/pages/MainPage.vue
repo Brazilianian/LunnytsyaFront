@@ -4,16 +4,23 @@
 
   <div class="container">
     <div class="row">
-
-
       <div class="col-md-3"
            v-for="product in products"
            :key="product.id"
       >
-        <product-item :product="product"></product-item>
+        <product-item
+            class="mt-5"
+            :product="product"
+        ></product-item>
       </div>
-
     </div>
+
+    <pagination
+        class="mt-3"
+        :page="page"
+        :totalPages="totalPages"
+        @changePage="changePage"
+    />
   </div>
 </template>
 
@@ -22,22 +29,41 @@
 import axios from 'axios'
 
 export default {
-  components: {},
 
   data() {
     return {
       HTTP_REQUEST: 'http://localhost:8888/api/v1',
-      products: []
+      products: [],
+      page: 0,
+      limit: 10,
+      totalPages: 0
     }
   },
-  methods: {},
-  async mounted() {
-    try {
-      await axios.get(this.HTTP_REQUEST + '/product/get-all').then(response => this.products = response.data)
+  methods: {
+    changePage(number) {
+      this.getProducts(number - 1);
+    },
+    async getProducts(pageNumber) {
+      try {
+        await axios.get(this.HTTP_REQUEST + '/product/get-all', {
+          params: {
+            page: pageNumber,
+            limit: this.limit
+          }
+        })
+            .then(response => {
+              this.page = response.data.number;
+              this.products = response.data.content;
+              this.totalPages = Math.ceil(response.data.totalElements / this.limit);
+            })
 
-    } catch (e) {
-      alert("Error")
+      } catch (e) {
+        alert(e)
+      }
     }
+  },
+  mounted() {
+    this.getProducts(0);
   }
 }
 </script>
