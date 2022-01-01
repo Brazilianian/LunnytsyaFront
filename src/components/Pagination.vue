@@ -3,9 +3,12 @@
     <ul class="pagination justify-content-center">
       <li
           :class="page === 0 ? 'page-item disabled' : 'page-item'"
-          @click="previousPage"
       >
-        <a class="page-link" href="#" aria-label="Previous">
+        <a
+            class="page-link user-select-none"
+            href="#"
+            aria-label="Previous"
+            @click="previousPage">
           <span aria-hidden="true">&laquo;</span>
         </a>
       </li>
@@ -16,16 +19,20 @@
           :class="page + 1 === numberPage ? 'page-item active' : 'page-item'"
           @click="changePage"
       >
-        <a class="page-link" href="#">
+        <a class="page-link user-select-none" href="#">
           {{ numberPage }}
         </a>
       </li>
 
       <li
           :class="page + 1 === totalPages ? 'page-item disabled' : 'page-item'"
-          @click="nextPage"
       >
-        <a class="page-link" href="#" aria-label="Next">
+        <a
+            class="page-link user-select-none"
+            href="#"
+            aria-label="Next"
+            @click="nextPage"
+        >
           <span aria-hidden="true">&raquo;</span>
         </a>
       </li>

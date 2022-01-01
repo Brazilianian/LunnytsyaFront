@@ -1,12 +1,17 @@
 <template>
-  <div class="card" style="width: 18rem;">
-    <img :src="product.image" class="card-img-top">
-    <div class="card-body">
-      <h5 class="card-title">{{ product.name }}</h5>
-      <p class="card-text">{{ product.description }}</p>
-      <a href="product" class="btn btn-primary">Go somewhere</a>
+  <a
+      :href="'/product/' + product.id"
+      class="text-decoration-none text-black"
+  >
+    <div class="card" style="width: 18rem;">
+      <img :src="product.image" class="card-img-top">
+      <div class="card-body">
+        <h5 class="card-title">{{ product.name }}</h5>
+        <h5 class="card-title">₴{{ product.price }}</h5>
+        <p class="card-text text-secondary">{{ product.description.length > 100 ? product.description.slice(0, 100) + '...' : product.description }}</p>
+      </div>
     </div>
-  </div>
+  </a>
 </template>
 
 <script>

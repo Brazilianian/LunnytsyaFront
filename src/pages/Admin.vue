@@ -27,7 +27,7 @@
     <div class="row mb-5">
       <div class="col-md-1"></div>
       <div class="col-md-10">
-        <form @submit.prevent="createProduct" enctype="multipart/form-data">
+        <form @submit.prevent enctype="multipart/form-data">
 
           <div :class="[productValidation.image !== undefined ? 'has-validation' : '']">
             <label class="form-label" for="image">Виберіть зображення</label>
@@ -63,7 +63,7 @@
               </div>
           </div>
 
-          <button class="btn btn-success float-end mt-2">
+          <button class="btn btn-success float-end mt-2" @click="createProduct">
             <h5>Створити</h5>
           </button>
         </form>
@@ -114,8 +114,9 @@ export default {
         let fileReader = new FileReader();
         fileReader.readAsDataURL(this.file);
         fileReader.onload = this.createProductMessage;
+      } else {
+        this.createProductMessage(null);
       }
-      this.createProductMessage(null);
     },
 
     createProductMessage(event) {

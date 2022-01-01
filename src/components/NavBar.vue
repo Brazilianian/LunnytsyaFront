@@ -9,6 +9,9 @@
 
         <ul class="navbar-nav me-auto mb-2 mb-lg-0">
           <li class="nav-item">
+            <a class="nav-link active" aria-current="page" href="/product">Намиста</a>
+          </li>
+          <li class="nav-item">
             <a class="nav-link active" aria-current="page" href="/admin">Адміністратор</a>
           </li>
         </ul>
