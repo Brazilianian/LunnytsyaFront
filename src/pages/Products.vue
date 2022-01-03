@@ -1,7 +1,7 @@
 <template>
   <nav-bar></nav-bar>
 
-  <div class="container">
+  <div class="container mt-5">
     <div class="row">
       <div class="col-md-3 mt-5"
            v-for="product in products"
@@ -41,7 +41,7 @@ export default {
     },
     async getProducts(pageNumber) {
       try {
-        await axios.get(this.HTTP_REQUEST + '/product/get-all', {
+        await axios.get(this.HTTP_REQUEST + '/product', {
           params: {
             page: pageNumber,
             size: this.size

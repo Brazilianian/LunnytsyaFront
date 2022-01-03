@@ -2,7 +2,7 @@
 
   <nav-bar></nav-bar>
 
-  <div class="container">
+  <div class="container mt-5 pt-3">
 
     <h3 class="text-center">Створення продукту</h3>
 
@@ -10,7 +10,7 @@
       <div class="col-md-3 border-end">
         <ul class="list-group">
           <a href="/admin" class="list-group-item active">Новий товар</a>
-          <a href="/admin/background" class="list-group-item">Фонове зображення головної сторінки</a>
+          <a href="/admin/main-page" class="list-group-item">Налаштування головної сторінки</a>
           <a class="list-group-item">Посилання 3</a>
           <a class="list-group-item">Посилання 4</a>
         </ul>
@@ -123,7 +123,7 @@ export default {
       if (event != null) {
         this.product.image = event.target.result;
       }
-      axios.post(this.HTTP_REQUEST + '/product/create', this.product)
+      axios.post(this.HTTP_REQUEST + '/product', this.product)
           .then(response => {
             console.log(response);
             location.reload();

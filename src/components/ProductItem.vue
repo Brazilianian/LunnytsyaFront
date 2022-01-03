@@ -19,8 +19,11 @@ export default {
   name: "product-item",
   props: {
     product: {
-      type: Object,
-      required: true
+      id: 0,
+      name: '',
+      image: '',
+      price: 0,
+      description: '',
     }
   }
 }

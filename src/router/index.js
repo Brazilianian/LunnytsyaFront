@@ -1,8 +1,8 @@
 import { createRouter, createWebHistory } from 'vue-router'
 import MainPage from "../pages/MainPage";
-import Admin from "../pages/Admin";
+import Admin from "../pages/admin/Admin";
 import Products from "../pages/Products";
-import Background from "../pages/Background";
+import Background from "../pages/admin/MainPageAdmin";
 
 const routes = [
   {
@@ -14,7 +14,7 @@ const routes = [
     component: Admin
   },
   {
-    path: '/admin/background',
+    path: '/admin/main-page',
     component: Background
   },
   {
