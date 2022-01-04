@@ -124,13 +124,16 @@ export default {
         this.product.image = event.target.result;
       }
       axios.post(this.HTTP_REQUEST + '/product', this.product)
-          .then(response => {
-            console.log(response);
+          .then(() => {
             location.reload();
           })
           .catch(
              error => {
-               this.productValidation = error.response.data;
+               if (error.response.status === 422) {
+                 this.productValidation = error.response.data;
+               } else {
+                 alert(error.response);
+               }
              }
           );
     }

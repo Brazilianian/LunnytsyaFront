@@ -27,7 +27,7 @@
     <div class="row">
       <h3 class="text-center my-3">Популярне</h3>
       <div
-          class="col-md-3 mt-3 mb-3"
+          class="col-md-3 my-3"
           v-for="product in products"
           :key="product.id"
       >
@@ -102,7 +102,6 @@ export default {
           }
         })
             .then(response => {
-              console.log(response);
               this.products = response.data.content;
             })
             .catch(error => alert(error));

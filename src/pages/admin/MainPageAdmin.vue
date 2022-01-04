@@ -47,17 +47,13 @@
 
       <div class="col-md-4 border-end">
 
-        <!--FIXME !!! -->
-
-        <div class="text-center" v-if="author.image !== '' && author.image !== null && author.image !== undefined">
-          <img id="author-image" :src="author.image" class="img-thumbnail">
+        <div class="text-center">
+          <img
+              id="author-image"
+              :src="author.image !== '' && author.image !== null && author.image !== undefined
+                      ? author.image
+                      : '@/assets/images/no-image.png'" class="img-thumbnail">
         </div>
-
-        <div v-else class="text-center">
-          <img id="author-image" src="@/assets/images/no-image.png" class="img-thumbnail">
-        </div>
-
-
       </div>
 
       <div class="col-md-8">
@@ -125,8 +121,14 @@ export default {
         image: '',
         description: '',
       },
+      backgroundValidation: '',
+      authorValidation: {
+        image: '',
+        description: '',
+      },
     }
   },
+
   methods: {
     backgroundImageChange(event) {
       let reader = new FileReader();
@@ -155,42 +157,48 @@ export default {
     },
 
     saveBackground() {
-      let fileReader = new FileReader();
-      fileReader.readAsDataURL(this.backgroundFile);
-      fileReader.onload = async (event) => {
-        this.backgroundImage.content = event.target.result;
-        try {
-          await axios.post(this.HTTP_REQUEST + '/main-page/background-image', this.backgroundImage)
-              .then(response => {
-                console.log(response);
-                this.changeButtonClass('background-button', 'btn-primary', 'btn-success')
-              })
-              .catch(error => {
-                alert(error);
-              })
-        } catch (e) {
-          alert(e);
-        }
-      };
+      if (this.backgroundFile !== '') {
+        let fileReader = new FileReader();
+        fileReader.readAsDataURL(this.backgroundFile);
+        fileReader.onload = async (event) => {
+          this.backgroundImage.content = event.target.result;
+          try {
+            await axios.post(this.HTTP_REQUEST + '/main-page/background-image', this.backgroundImage)
+                .then(response => {
+                  console.log(response);
+                  this.changeButtonClass('background-button', 'btn-primary', 'btn-success')
+                })
+                .catch(error => {
+                  alert(error);
+                })
+          } catch (e) {
+            alert(e);
+          }
+        };
+      }
     },
 
-    async saveAuthor() {
+    saveAuthor() {
       if (this.authorImageFile !== '') {
         let fileReader = new FileReader();
         fileReader.readAsDataURL(this.authorImageFile);
         fileReader.onload = (event) => {
           this.author.image = event.target.result;
+          this.setAuthor();
         };
+      } else {
+        this.setAuthor();
       }
+    },
 
+    async setAuthor() {
       try {
         await axios.post(this.HTTP_REQUEST + '/main-page/author', this.author)
-            .then(response => {
-              console.log(response);
+            .then(() => {
               this.changeButtonClass('author-button', 'btn-primary', 'btn-success')
             })
             .catch(error => {
-              alert(error);
+              this.productValidation = error.response.data;
             })
       } catch (e) {
         alert(e);
@@ -205,7 +213,7 @@ export default {
               document.getElementById('background').style.backgroundImage = 'url(' + response.data.content + ')';
             })
             .catch(error => {
-              alert(error);
+              this.backgroundValidation = error.response.data;
             })
       } catch (e) {
         alert(e);
