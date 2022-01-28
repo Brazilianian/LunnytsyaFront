@@ -113,7 +113,6 @@ export default {
     return {
       backgroundFile: '',
       authorImageFile: '',
-      HTTP_REQUEST: 'http://localhost:8888/api/v1',
       backgroundImage: {
         content: '',
       },
@@ -193,7 +192,7 @@ export default {
 
     async setAuthor() {
       try {
-        await axios.post(this.HTTP_REQUEST + '/main-page/author', this.author)
+        await axios.post('/main-page/author', this.author)
             .then(() => {
               this.changeButtonClass('author-button', 'btn-primary', 'btn-success')
             })
@@ -208,7 +207,7 @@ export default {
     async getBackgroundImage() {
       try {
         await axios
-            .get(this.HTTP_REQUEST + '/main-page/background-image/get-main')
+            .get('/main-page/background-image/get-main')
             .then(response => {
               document.getElementById('background').style.backgroundImage = 'url(' + response.data.content + ')';
             })
@@ -222,7 +221,7 @@ export default {
 
     async getAuthor() {
       try {
-        await axios.get(this.HTTP_REQUEST + '/main-page/author')
+        await axios.get('/main-page/author')
             .then(response => {
               if (response.data !== '') {
                 this.author = response.data;
@@ -237,12 +236,28 @@ export default {
     changeButtonClass(id, from, to) {
       let button = document.getElementById(id);
       button.className = button.className.replace(from, to);
+    },
+
+    async checkIsAdmin() {
+      this.token = localStorage.getItem('token');
+      await axios.get('/admin/check', {
+        headers: {
+          'Authorization': 'Bearer ' + this.token,
+        }
+      }).then(response => {
+        this.isAdmin = response.status === 200;
+      }).catch(() => {
+        this.isAdmin = false;
+        this.$router.push('/');
+      })
     }
   },
 
-  mounted() {
-    this.getBackgroundImage();
-    this.getAuthor();
+  async mounted() {
+    await this.checkIsAdmin();
+
+    await this.getBackgroundImage();
+    await this.getAuthor();
   }
 }
 </script>

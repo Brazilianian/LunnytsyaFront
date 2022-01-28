@@ -2,7 +2,8 @@
   <nav class="navbar navbar-dark bg-dark navbar-expand-lg fixed-top">
     <div class="container-fluid">
       <a class="navbar-brand" href="/">Лунниця</a>
-      <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarSupportedContent" aria-controls="navbarSupportedContent" aria-expanded="false" aria-label="Toggle navigation">
+      <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarSupportedContent"
+              aria-controls="navbarSupportedContent" aria-expanded="false" aria-label="Toggle navigation">
         <span class="navbar-toggler-icon"></span>
       </button>
       <div class="collapse navbar-collapse" id="navbarSupportedContent">
@@ -11,8 +12,9 @@
           <li class="nav-item">
             <a class="nav-link active" aria-current="page" href="/product">Намиста</a>
           </li>
-          <li class="nav-item dropdown">
-            <a class="nav-link dropdown-toggle" href="#" id="navbarDropdown" role="button" data-bs-toggle="dropdown" aria-expanded="false">
+          <li class="nav-item dropdown" v-if="isAdmin">
+            <a class="nav-link dropdown-toggle" href="#" id="navbarDropdown" role="button" data-bs-toggle="dropdown"
+               aria-expanded="false">
               Адміністратор
             </a>
             <ul class="dropdown-menu" aria-labelledby="navbarDropdown">
@@ -23,9 +25,8 @@
             </ul>
           </li>
         </ul>
-
-        <form class="d-flex">
-          <button class="btn btn-outline-success" type="submit">Профіль</button>
+        <form class="d-flex" v-if="!isAuthorized">
+          <a href="/login" class="btn btn-outline-success" type="submit">Увійти</a>
         </form>
       </div>
     </div>
@@ -33,8 +34,58 @@
 </template>
 
 <script>
+import axios from "axios";
+
 export default {
-  name: "nav-bar"
+  name: "nav-bar",
+  data() {
+    return {
+      isAuthorized: false,
+      isAdmin: false,
+    }
+  },
+
+  methods: {
+    getToken() {
+      return localStorage.getItem("token");
+    },
+
+    async checkIsAdmin() {
+      this.token = this.getToken();
+
+      await axios.get('/admin/check', {
+        headers: {
+          'Authorization': 'Bearer ' + this.token
+        }
+      }).then(response => {
+          this.isAdmin = response.status === 200;
+      }).catch(() => {
+        this.isAdmin = false
+      })
+    },
+
+    async checkIsAuthorized(){
+      this.token = this.getToken();
+
+      await axios.get('/check/auth', {
+        headers: {
+          'Authorization': 'Bearer ' + this.token
+        }
+      }).then(response => {
+        this.isAuthorized = response.status === 200;
+      }).catch(() => {
+        this.isAuthorized = false;
+      })
+    },
+  },
+
+  async mounted() {
+    await this.checkIsAuthorized()
+
+    if (this.isAuthorized) {
+      await this.checkIsAdmin();
+    }
+  }
 }
 </script>
 

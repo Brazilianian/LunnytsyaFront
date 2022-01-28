@@ -1,6 +1,9 @@
 <template>
 
-  <nav-bar></nav-bar>
+  <nav-bar
+      :isAdmin="isAdmin"
+      :isAuthorized="isAuthorized"
+  ></nav-bar>
 
   <div
       id="background"
@@ -48,7 +51,6 @@ export default {
 
   data() {
     return {
-      HTTP_REQUEST: 'http://localhost:8888/api/v1',
       backgroundImage: {
         content: ''
       },
@@ -56,13 +58,16 @@ export default {
         image: '',
         description: ''
       },
-      products: []
+      products: [],
+      isAuthorized: false,
+      isAdmin: false,
+      token: '',
     }
   },
   methods: {
     async getBackgroundImage() {
       try {
-        await axios.get(this.HTTP_REQUEST + '/main-page/background-image/get-main')
+        await axios.get('/main-page/background-image/get-main')
             .then(response => {
               if (response.data !== '') {
                 this.backgroundImage = response.data;
@@ -82,7 +87,7 @@ export default {
     },
     async getAuthor() {
       try {
-        await axios.get(this.HTTP_REQUEST + '/main-page/author')
+        await axios.get('/main-page/author')
             .then(response => {
               this.author = response.data;
             })
@@ -95,7 +100,7 @@ export default {
     },
     async getProducts() {
       try {
-        await axios.get(this.HTTP_REQUEST + '/product', {
+        await axios.get('/product', {
           params: {
             page: 0,
             size: 4
@@ -108,7 +113,7 @@ export default {
       } catch (e) {
         alert(e);
       }
-    }
+    },
   },
   mounted() {
     this.getBackgroundImage();

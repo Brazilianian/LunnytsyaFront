@@ -40,7 +40,8 @@
 
           <div :class="[productValidation.name !== undefined ? 'has-validation' : '']">
             <label class="form-label" for="name">Введіть назву</label>
-            <input v-model="product.name" id="name" type="text" :class="'form-control ' + [productValidation.name !== undefined ? 'is-invalid' : '']">
+            <input v-model="product.name" id="name" type="text"
+                   :class="'form-control ' + [productValidation.name !== undefined ? 'is-invalid' : '']">
             <div v-if="productValidation.name !== undefined" class="invalid-feedback">
               {{ productValidation.name }}
             </div>
@@ -48,19 +49,22 @@
 
           <div :class="[productValidation.price !== undefined ? 'has-validation' : '']">
             <label class="form-label" for="price">Введіть ціну</label>
-            <input v-model="product.price" id="price" type="number" step="0.01" :class="'form-control ' + [productValidation.price !== undefined ? 'is-invalid' : '']">
-              <div v-if="productValidation.price !== undefined" class="invalid-feedback">
-                {{ productValidation.price }}
-              </div>
+            <input v-model="product.price" id="price" type="number" step="0.01"
+                   :class="'form-control ' + [productValidation.price !== undefined ? 'is-invalid' : '']">
+            <div v-if="productValidation.price !== undefined" class="invalid-feedback">
+              {{ productValidation.price }}
+            </div>
           </div>
 
           <div :class="[productValidation.description !== undefined ? 'has-validation' : '']">
             <label class="form-label" for="text">Введіть опис</label>
-            <textarea v-model="product.description" id="text" name="name" :class="'form-control ' + [productValidation.description !== undefined ? 'is-invalid' : '']" style="resize: none"
+            <textarea v-model="product.description" id="text" name="name"
+                      :class="'form-control ' + [productValidation.description !== undefined ? 'is-invalid' : '']"
+                      style="resize: none"
                       rows="10"></textarea>
-              <div v-if="productValidation.description !== undefined" class="invalid-feedback">
-                {{ productValidation.description }}
-              </div>
+            <div v-if="productValidation.description !== undefined" class="invalid-feedback">
+              {{ productValidation.description }}
+            </div>
           </div>
 
           <button class="btn btn-success float-end mt-2" @click="createProduct">
@@ -83,16 +87,16 @@ export default {
   components: {},
   data() {
     return {
-      HTTP_REQUEST: 'http://localhost:8888/api/v1',
+      token: '',
+      isAdmin: false,
       product: {
         name: '',
         description: '',
         price: 0,
         image: ''
       },
-      productValidation: {
-      },
-      file: ''
+      productValidation: {},
+      file: '',
     }
   },
   methods: {
@@ -123,20 +127,38 @@ export default {
       if (event != null) {
         this.product.image = event.target.result;
       }
-      axios.post(this.HTTP_REQUEST + '/product', this.product)
+      axios.post('/product', this.product)
           .then(() => {
             location.reload();
           })
           .catch(
-             error => {
-               if (error.response.status === 422) {
-                 this.productValidation = error.response.data;
-               } else {
-                 alert(error.response);
-               }
-             }
+              error => {
+                if (error.response.status === 422) {
+                  this.productValidation = error.response.data;
+                } else {
+                  alert(error.response);
+                }
+              }
           );
+    },
+
+    async checkIsAdmin() {
+      this.token = localStorage.getItem('token');
+      await axios.get('/admin/check', {
+        headers: {
+          'Authorization': 'Bearer ' + this.token,
+        }
+      }).then(response => {
+        this.isAdmin = response.status === 200;
+      }).catch(() => {
+        this.isAdmin = false;
+        this.$router.push('/');
+      })
     }
+  },
+
+  async mounted() {
+    await this.checkIsAdmin();
   }
 }
 </script>
