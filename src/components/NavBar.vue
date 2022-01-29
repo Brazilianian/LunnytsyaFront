@@ -28,6 +28,9 @@
         <form class="d-flex" v-if="!isAuthorized">
           <a href="/login" class="btn btn-outline-success" type="submit">Увійти</a>
         </form>
+        <form class="d-flex" v-if="isAuthorized">
+          <a href="/profile" class="btn btn-outline-success" type="submit">Профіль</a>
+        </form>
       </div>
     </div>
   </nav>
