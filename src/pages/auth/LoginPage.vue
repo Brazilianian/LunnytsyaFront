@@ -26,8 +26,6 @@
             </div>
           </div>
 
-
-
           <button class="btn btn-primary float-end" @click="login">Увійти</button>
           <h5>
             Не маєте акаунт?

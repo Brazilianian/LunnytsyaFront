@@ -6,6 +6,7 @@ import Background from "../pages/admin/MainPageAdmin";
 import Product from "../pages/ProductPage";
 import LoginPage from "../pages/auth/LoginPage";
 import RegistrationPage from "../pages/auth/RegistrationPage";
+import ProfilePage from "../pages/profile/ProfilePage";
 
 const routes = [
   {
@@ -35,6 +36,10 @@ const routes = [
   {
     path: '/registration',
     component: RegistrationPage
+  },
+  {
+    path: '/profile',
+    component: ProfilePage
   }
 ]
 

@@ -23,7 +23,7 @@ components.forEach(component => {
     app.component(component.name, component);
 })
 
-app.component('fa', FontAwesomeIcon)
+app.component('fas', FontAwesomeIcon)
 
 app.use(router)
 

@@ -27,14 +27,14 @@
               @click="deleteProduct"
               class="btn btn-danger float-end mx-2"
           >
-            <fa icon="trash-alt"></fa>
+            <fas icon="trash-alt"></fas>
           </button>
 
           <button
               class="btn btn-primary float-end mx-2"
               data-bs-toggle="modal" data-bs-target="#staticBackdrop"
           >
-            <fa icon="edit"></fa>
+            <fas icon="edit"></fas>
           </button>
 
           <div class="modal fade" id="staticBackdrop" data-bs-backdrop="static" data-bs-keyboard="false"
@@ -72,8 +72,8 @@
                           @click="changeProductIsVisible"
                           class="btn btn-primary float-end mx-2"
                       >
-                        <fa v-if="product.visible" icon="eye"></fa>
-                        <fa v-else icon="eye-slash"></fa>
+                        <fas v-if="product.visible" icon="eye"></fas>
+                        <fas v-else icon="eye-slash"></fas>
                       </button>
                     </div>
                     <div class="w-75 ms-2">
@@ -145,6 +145,7 @@ export default {
       productValidation: {},
       errorMessage: '',
       isAdmin: false,
+      token: '',
     }
   },
 
@@ -215,10 +216,14 @@ export default {
     },
 
     async checkIsAdmin() {
-      this.token = localStorage.getItem('user');
+      this.token = localStorage.getItem("token");
+
       await axios.get('/admin/check', {
-        'Authorization': 'Bearer ' + this.token,
+        headers: {
+          'Authorization': 'Bearer ' + this.token,
+        }
       }).then(response => {
+        console.log(response)
         this.isAdmin = response.status === 200;
       }).catch(() => {
         this.isAdmin = false;

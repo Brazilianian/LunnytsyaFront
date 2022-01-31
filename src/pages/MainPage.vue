@@ -7,11 +7,11 @@
 
   <div
       id="background"
-      class="vh-75 vw-100 cover no-repeat bg-position-center attachment-fixed"
+      class="vh-75 cover no-repeat bg-position-center attachment-fixed"
   >
   </div>
 
-  <div class="container vh-100">
+  <div class="container vh-100 vw-100">
     <div class="row mt-5">
       <div class="col-md-4 border-end">
         <img :src="author.image" class="img-thumbnail">
