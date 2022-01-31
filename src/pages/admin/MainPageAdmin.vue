@@ -5,9 +5,8 @@
 
   <div
       id="background"
-      class="vh-75 border border-4 border-primary m-2 rounded-3 no-repeat cover bg-position-center"
+      :class="'vh-75 border border-4 border-primary m-2 rounded-3 no-repeat cover bg-position-center ' + [backgroundImage.content === '' ? 'no-image' : '']"
   >
-    <img src="" alt="">
   </div>
 
   <div class="container mt-5">
@@ -50,9 +49,10 @@
         <div class="text-center">
           <img
               id="author-image"
-              :src="author.image !== '' && author.image !== null && author.image !== undefined
-                      ? author.image
-                      : '@/assets/images/no-image.png'" class="img-thumbnail">
+              :src="author.image === '' ? '' : author.image"
+              :class="'img-thumbnail ' + [author.image === '' ? 'invisible' : '']">
+
+          <img v-if="author.image === ''" src="@/assets/images/no-image.png" class="img-thumbnail">
         </div>
       </div>
 
@@ -82,15 +82,18 @@
 
       </div>
       <div class="col-md-8">
-        <div class="mt-3">
+        <div class="mt-3 has-validation">
           <label for="author-description" class="form-label">Введіть опис</label>
           <textarea
-              @change="changeButtonClass('author-button', 'btn-success', 'btn-primary')"
+              @change="changeButtonClass('author-button', 'btn-primary', 'btn-success')"
               v-model="author.description"
               id="author-description"
-              class="form-control no-resize"
+              :class="'form-control no-resize ' + [authorValidation.description === undefined ? '' : 'is-invalid']"
               rows="6"
               placeholder="Опис"></textarea>
+          <div class="invalid-feedback">
+            {{ authorValidation.description }}
+          </div>
         </div>
 
         <button
@@ -122,13 +125,22 @@ export default {
       },
       backgroundValidation: '',
       authorValidation: {
-        image: '',
-        description: '',
       },
+      token: '',
+      isAdmin: ''
     }
   },
 
   methods: {
+    changeButtonClass(id, from, to) {
+      let button = document.getElementById(id);
+      button.className = button.className.replace(from, to);
+    },
+
+    getToken() {
+      return localStorage.getItem("token");
+    },
+
     backgroundImageChange(event) {
       let reader = new FileReader();
       reader.readAsDataURL(event.target.files[0]);
@@ -136,6 +148,8 @@ export default {
       reader.onload = (reader) => {
         let background = document.getElementById('background');
         background.style.backgroundImage = 'url(' + reader.target.result + ')';
+
+        this.backgroundImage.content = event.target.result;
 
         this.changeButtonClass('background-button', 'btn-success', 'btn-primary');
 
@@ -147,8 +161,7 @@ export default {
       reader.readAsDataURL(event.target.files[0]);
       this.authorImageFile = this.$refs["author-image"].files[0];
       reader.onload = (reader) => {
-        let background = document.getElementById('author-image');
-        background.src = reader.target.result;
+        this.author.image = reader.target.result;
 
         let button = document.getElementById('author-button');
         button.className = button.className.replace('btn-success', 'btn-primary');
@@ -162,7 +175,11 @@ export default {
         fileReader.onload = async (event) => {
           this.backgroundImage.content = event.target.result;
           try {
-            await axios.post(this.HTTP_REQUEST + '/main-page/background-image', this.backgroundImage)
+            await axios.post('/main-page/background-image', this.backgroundImage, {
+              headers: {
+                'Authorization': 'Bearer ' + this.token,
+              }
+            })
                 .then(response => {
                   console.log(response);
                   this.changeButtonClass('background-button', 'btn-primary', 'btn-success')
@@ -192,67 +209,67 @@ export default {
 
     async setAuthor() {
       try {
-        await axios.post('/main-page/author', this.author)
-            .then(() => {
-              this.changeButtonClass('author-button', 'btn-primary', 'btn-success')
-            })
-            .catch(error => {
-              this.productValidation = error.response.data;
-            })
+        await axios.post('/main-page/author', this.author, {
+          headers: {
+            'Authorization': 'Bearer ' + this.token
+          }
+        }).then((response) => {
+          if (response.status === 200) {
+            this.changeButtonClass('author-button', 'btn-primary', 'btn-success')
+          }
+        }).catch(error => {
+          if (error.response.status === 422) {
+            this.authorValidation = error.response.data;
+          }
+        })
       } catch (e) {
         alert(e);
       }
     },
 
     async getBackgroundImage() {
-      try {
-        await axios
-            .get('/main-page/background-image/get-main')
-            .then(response => {
+      await axios
+          .get('/main-page/background-image/get-main', {
+            headers: {
+              'Authorization': 'Bearer ' + this.token
+            }
+          }).then(response => {
+            if (response.status === 200) {
               document.getElementById('background').style.backgroundImage = 'url(' + response.data.content + ')';
-            })
-            .catch(error => {
-              this.backgroundValidation = error.response.data;
-            })
-      } catch (e) {
-        alert(e);
-      }
+            }
+          })
+          .catch(error => {
+            this.backgroundValidation = error.response.data;
+          })
     },
 
     async getAuthor() {
-      try {
-        await axios.get('/main-page/author')
-            .then(response => {
-              if (response.data !== '') {
-                this.author = response.data;
-              }
-            })
-            .catch(error => console.log(error));
-      } catch (e) {
-        alert(e);
-      }
-    },
-
-    changeButtonClass(id, from, to) {
-      let button = document.getElementById(id);
-      button.className = button.className.replace(from, to);
+      await axios.get('/main-page/author', {
+        headers: {
+          'Authorization': 'Bearer ' + this.token
+        }
+      }).then(response => {
+        if (response.data !== '') {
+          this.author = response.data;
+        }
+      }).catch(error => console.log(error));
     },
 
     async checkIsAdmin() {
-      this.token = localStorage.getItem('token');
+      this.token = this.getToken();
       await axios.get('/admin/check', {
         headers: {
           'Authorization': 'Bearer ' + this.token,
         }
       }).then(response => {
         this.isAdmin = response.status === 200;
-      }).catch(() => {
+      }).catch((e) => {
         this.isAdmin = false;
         this.$router.push('/');
+        console.log(e.response)
       })
-    }
+    },
   },
-
   async mounted() {
     await this.checkIsAdmin();
 
@@ -285,5 +302,9 @@ export default {
 
 .white-space-wrap {
   white-space: pre-wrap;
+}
+
+.no-image {
+  background-image: url(../../assets/images/no-image.png);
 }
 </style>
