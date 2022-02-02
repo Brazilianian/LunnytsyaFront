@@ -1,6 +1,6 @@
 <template>
 
-  <nav-bar></nav-bar>
+  <nav-bar @admin="adminChange"></nav-bar>
 
   <div class="container mt-5 pt-3">
 
@@ -100,6 +100,13 @@ export default {
     }
   },
   methods: {
+    adminChange(isAdmin) {
+      if (!isAdmin) {
+        this.$router.push('/');
+      }
+      this.isAdmin = isAdmin;
+    },
+
     setImage(event) {
       let img = document.getElementById('productImage')
       let file = event.target.files[0];
@@ -141,24 +148,6 @@ export default {
               }
           );
     },
-
-    async checkIsAdmin() {
-      this.token = localStorage.getItem('token');
-      await axios.get('/admin/check', {
-        headers: {
-          'Authorization': 'Bearer ' + this.token,
-        }
-      }).then(response => {
-        this.isAdmin = response.status === 200;
-      }).catch(() => {
-        this.isAdmin = false;
-        this.$router.push('/');
-      })
-    }
-  },
-
-  async mounted() {
-    await this.checkIsAdmin();
   }
 }
 </script>

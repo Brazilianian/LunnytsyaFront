@@ -1,6 +1,9 @@
 <template>
   <div class="main vh-100 overflow-hidden text-white">
-    <nav-bar></nav-bar>
+    <nav-bar
+        @auth="authChange"
+        @admin="adminChange"
+    ></nav-bar>
 
     <div class="container mt-5">
       <div class="row">
@@ -72,6 +75,7 @@ export default {
     return {
       token: '',
       isAuthorized: false,
+      isAdmin: false,
       profile: {
         image: '',
         username: '',
@@ -87,6 +91,19 @@ export default {
   },
 
   methods: {
+    authChange(isAuthorized) {
+      this.isAuthorized = isAuthorized;
+      if (isAuthorized) {
+        this.getProfile();
+      } else {
+        this.$router.push('/');
+      }
+    },
+
+    adminChange(isAdmin) {
+      this.isAdmin = isAdmin;
+    },
+
     logout() {
       if (confirm('Ви дійсно бажаєте вийти?')) {
         localStorage.setItem('token', '');
@@ -111,15 +128,6 @@ export default {
       this.classChange("button", 'btn-success', 'btn-primary');
     },
 
-    isAdmin() {
-      this.profile.authorities.forEach(role => {
-        if (role === 'ADMIN') {
-          return true;
-        }
-      });
-      return false;
-    },
-
     async saveChanges() {
       await axios.put('/profile', this.profile, {
         headers: {
@@ -135,7 +143,12 @@ export default {
       })
     },
 
+    getToken() {
+      return localStorage.getItem('token');
+    },
+
     async getProfile() {
+      this.token = this.getToken()
       await axios.get('/profile', {
         headers: {
           'Authorization': 'Bearer ' + this.token
@@ -144,39 +157,9 @@ export default {
         if (response.status === 200) {
           this.profile = response.data;
         }
-      }).catch(error => {
-        if (error.response.status === 403) {
-          this.checkIsAuthorized();
-        }
-      });
-    },
-
-    async checkIsAuthorized() {
-      this.token = localStorage.getItem("token");
-
-      await axios.get('/check/auth', {
-        headers: {
-          'Authorization': 'Bearer ' + this.token
-        }
-      }).then(response => {
-        if (response.status === 200) {
-          this.isAuthorized = true;
-        } else {
-          this.isAuthorized = false;
-          this.$router.push('/');
-        }
-      }).catch(() => {
-        this.isAuthorized = false;
-        this.$router.push('/');
       })
     },
   },
-
-  async mounted() {
-    await this.checkIsAuthorized();
-
-    await this.getProfile();
-  }
 }
 </script>
 

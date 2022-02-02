@@ -53,41 +53,76 @@ export default {
       return localStorage.getItem("token");
     },
 
-    async checkIsAdmin() {
+    checkIsAdmin() {
       this.token = this.getToken();
 
-      await axios.get('/admin/check', {
+      axios.get('/admin/check', {
         headers: {
           'Authorization': 'Bearer ' + this.token
         }
       }).then(response => {
-          this.isAdmin = response.status === 200;
-      }).catch(() => {
-        this.isAdmin = false
+        if (response.status === 200) {
+          this.isAdmin = true;
+          this.$emit('admin', true);
+        }
+      }).catch((e) => {
+        let exception = e.response.headers.exception;
+        if (e.response.status === 403 && exception !== null) {
+          this.refreshToken(false);
+        } else {
+          this.isAdmin = false;
+          this.$emit('admin', false);
+        }
       })
     },
 
-    async checkIsAuthorized(){
+    refreshToken(isAuth) {
+      console.log('refresh token')
+      axios.get('/auth/refresh-token', {
+        headers: {
+          'Authorization': 'Bearer ' + this.token,
+          'isRefreshToken': 'true'
+        }
+      }).then(response => {
+        if (response.status === 200) {
+          console.log('success refresh')
+          localStorage.setItem('token', response.data.jwtToken);
+          if (isAuth) {
+            this.checkIsAuthorized();
+          } else {
+            this.checkIsAdmin()
+          }
+        }
+      })
+    },
+
+    checkIsAuthorized() {
       this.token = this.getToken();
 
-      await axios.get('/check/auth', {
+      axios.get('/check/auth', {
         headers: {
           'Authorization': 'Bearer ' + this.token
         }
-      }).then(response => {
-        this.isAuthorized = response.status === 200;
-      }).catch(() => {
-        this.isAuthorized = false;
+      }).then(() => {
+        this.isAuthorized = true;
+        this.$emit('auth', true);
+      }).catch(e => {
+        if (e.response.status === 403) {
+          let exception = e.response.headers.exception;
+          if (exception !== null && exception !== undefined && exception.includes('JWT expired')) {
+            this.refreshToken(true);
+          } else {
+            this.isAuthorized = false;
+            this.$emit('auth', false);
+          }
+        }
       })
-    },
+    }
   },
 
-  async mounted() {
-    await this.checkIsAuthorized()
-
-    if (this.isAuthorized) {
-      await this.checkIsAdmin();
-    }
+  mounted() {
+    this.checkIsAuthorized()
+    this.checkIsAdmin();
   }
 }
 </script>

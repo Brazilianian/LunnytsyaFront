@@ -1,5 +1,5 @@
 <template>
-  <nav-bar></nav-bar>
+  <nav-bar @admin="changeAdmin"></nav-bar>
 
   <div v-if="errorMessage !== ''" class="text-center text-danger mt-5 pt-5">
     <h4 class="mt-3">{{ errorMessage }}</h4>
@@ -215,24 +215,12 @@ export default {
       }
     },
 
-    async checkIsAdmin() {
-      this.token = localStorage.getItem("token");
-
-      await axios.get('/admin/check', {
-        headers: {
-          'Authorization': 'Bearer ' + this.token,
-        }
-      }).then(response => {
-        console.log(response)
-        this.isAdmin = response.status === 200;
-      }).catch(() => {
-        this.isAdmin = false;
-      })
+    changeAdmin(isAdmin) {
+      this.isAdmin = isAdmin;
     }
   },
 
   async mounted() {
-    await this.checkIsAdmin();
     await this.getProduct();
   }
 }

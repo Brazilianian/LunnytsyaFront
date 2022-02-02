@@ -255,24 +255,14 @@ export default {
       }).catch(error => console.log(error));
     },
 
-    async checkIsAdmin() {
-      this.token = this.getToken();
-      await axios.get('/admin/check', {
-        headers: {
-          'Authorization': 'Bearer ' + this.token,
-        }
-      }).then(response => {
-        this.isAdmin = response.status === 200;
-      }).catch((e) => {
-        this.isAdmin = false;
+    changeAdmin(isAdmin) {
+      if (!isAdmin) {
         this.$router.push('/');
-        console.log(e.response)
-      })
+      }
+      this.isAdmin = isAdmin;
     },
   },
   async mounted() {
-    await this.checkIsAdmin();
-
     await this.getBackgroundImage();
     await this.getAuthor();
   }
