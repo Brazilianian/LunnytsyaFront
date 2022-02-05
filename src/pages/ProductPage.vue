@@ -16,6 +16,11 @@
         <h4>₴{{ product.price }}</h4>
 
         <h5 class="white-space-wrap">{{ product.description }}</h5>
+
+        <button class="btn btn-primary float-end" @click="addToBasket">
+          <fas icon="cart-plus"></fas>
+        </button>
+
       </div>
     </div>
 
@@ -150,6 +155,39 @@ export default {
   },
 
   methods: {
+    addToBasket() {
+      let order = this.$cookies.get('basket');
+
+      let orderedProduct = {
+        product: {
+          id: this.product.id
+        },
+        orderStatus: 'IN_BASKET',
+        count: 1,
+        status: 'ENABLED',
+        created: new Date(),
+        updated: new Date(),
+      };
+
+      if (order === null || order === undefined) {
+        order = {
+          orderedProducts: [
+              orderedProduct
+          ],
+          user: {},
+          date: new Date(),
+          status: 'ENABLED',
+          created: new Date(),
+        }
+      } else {
+        order.orderedProducts[order.orderedProducts - 1] = orderedProduct;
+      }
+
+      order.updated = new Date();
+      this.$cookies.set("order",JSON.stringify(order).toString());
+      console.log(this.$cookies.get('order'))
+    },
+
     changeProductIsVisible() {
       this.product.visible = !this.product.visible;
     },
