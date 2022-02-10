@@ -156,7 +156,8 @@ export default {
 
   methods: {
     addToBasket() {
-      let order = this.$cookies.get('basket');
+      let order = JSON.parse(localStorage.getItem('order'));
+      console.log(order)
 
       let orderedProduct = {
         product: {
@@ -180,12 +181,22 @@ export default {
           created: new Date(),
         }
       } else {
-        order.orderedProducts[order.orderedProducts - 1] = orderedProduct;
+
+        let presented = false;
+        order.orderedProducts.forEach(op => {
+          if (op.product.id === orderedProduct.product.id) {
+            presented = true;
+          }
+        });
+
+        if (!presented) {
+          order.orderedProducts[order.orderedProducts.length] = orderedProduct;
+        }
       }
 
       order.updated = new Date();
-      this.$cookies.set("order",JSON.stringify(order).toString());
-      console.log(this.$cookies.get('order'))
+      localStorage.setItem('order', JSON.stringify(order));
+
     },
 
     changeProductIsVisible() {

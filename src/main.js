@@ -27,14 +27,6 @@ components.forEach(component => {
 
 app.component('fas', FontAwesomeIcon)
 
-app.use(VueCookies, {
-    expireTimes: "30d",
-    path: "/",
-    domain: "",
-    secure: true,
-    sameSite: "None"
-});
-
 app.use(router)
     .use(VueCookies)
     .mount('#app')
