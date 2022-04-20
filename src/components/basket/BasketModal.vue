@@ -1,24 +1,14 @@
 <template>
-  <div class="position-absolute">
-    <!-- Button trigger modal -->
-    <div class="position-fixed end-0 bottom-0 mb-2 me-2">
-      <button type="button" class="btn btn-outline-secondary" data-bs-toggle="modal" data-bs-target="#staticBackdrop">
-        <fas class="fs-1" icon="shopping-basket"></fas>
-      </button>
-    </div>
-  </div>
-  <!-- Modal -->
   <div class="modal fade" id="staticBackdrop" data-bs-backdrop="static" data-bs-keyboard="false" tabindex="-1"
        aria-labelledby="staticBackdropLabel" aria-hidden="true">
     <div class="modal-xl modal-dialog">
-      <div class="modal-content">
+      <div class="modal-content text-black">
         <div class="modal-header">
-          <h5 class="modal-title" id="staticBackdropLabel">Корзина</h5>
+          <h5 class="modal-title" id="staticBackdropLabel">Кошик</h5>
           <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
         </div>
         <div class="modal-body">
           <div class="container"
-               v-if="!isRefresh"
           >
             <div
                 class="row pb-2 mb-2 border-bottom border-2"
@@ -26,7 +16,9 @@
                 :key="product.id"
             >
               <div class="col-3 border-2 border-end">
-                <img :src="product.image" class="img-thumbnail">
+                <a :href="'/product/' + product.id">
+                  <img :src="product.image" class="img-thumbnail">
+                </a>
               </div>
 
               <div class="col-4 border-2 border-end">
@@ -52,13 +44,18 @@
                 </button>
               </div>
             </div>
-            <div class="row float-end">
+            <div class="row float-end" v-if="order !== null">
               <h5>Загальна ціна - ₴{{ getTotalPrice() }}</h5>
+            </div>
+            <div class="row" v-else>
+              <h5 class="text-center">У Вас поки пустий кошик, але це не пізно виправити</h5>
             </div>
           </div>
         </div>
         <div class="modal-footer">
-          <button type="button" class="btn btn-success" data-bs-dismiss="modal">Перейти до оформлення заказу</button>
+          <a href="/order" v-if="order !== null">
+            <button type="button" class="btn btn-success" data-bs-dismiss="modal">Перейти до оформлення заказу</button>
+          </a>
           <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Закрити</button>
         </div>
       </div>
@@ -75,28 +72,8 @@ export default {
 
   data() {
     return {
-      isRefresh: false,
-      order: {
-        created: '',
-        date: '',
-        orderedProducts: [
-          {
-            count: 0,
-            created: '',
-            orderStatus: '',
-            product: {
-              id: 0
-            },
-            status: '',
-            updated: '',
-          }
-        ],
-        status: '',
-        updated: '',
-        user: {},
-      },
-
-      products: []
+      order: null,
+      products: null,
     }
   },
 
@@ -110,15 +87,7 @@ export default {
     },
 
     removeProductFromOrder(id) {
-      this.isRefresh = true;
-
-      for (let i = 0; i < this.order.orderedProducts.length; i++) {
-        if (this.order.orderedProducts[i].product.id === id) {
-          this.order.orderedProducts.splice(i, 1);
-          localStorage.setItem('order', JSON.stringify(this.order));
-          break;
-        }
-      }
+      this.$emit('remove', id);
 
       for (let i = 0; i < this.products.length; i++) {
         if (this.products[i].id === id) {
@@ -126,14 +95,10 @@ export default {
           break;
         }
       }
-
-      this.isRefresh = false;
     },
 
     fillBasket() {
-      this.order = JSON.parse(localStorage.getItem('order'));
-
-      this.order.orderedProducts.forEach(orderedProduct => {
+      this.order?.orderedProducts.forEach(orderedProduct => {
         axios.get('/product/' + orderedProduct.product.id).then(response => {
           if (response.status === 200) {
             this.products[this.products.length] = response.data;
@@ -148,7 +113,22 @@ export default {
           return this.order.orderedProducts[i];
         }
       }
-    }
+    },
+
+    removeProduct(id) {
+      for (let i = 0; i < this.order.orderedProducts.length; i++) {
+        if (this.order.orderedProducts[i].product.id === id) {
+          this.order.orderedProducts.splice(i, 1);
+          localStorage.setItem('order', JSON.stringify(this.order));
+          break;
+        }
+      }
+    },
+
+    refreshBasket() {
+      this.order = JSON.parse(localStorage.getItem('order'));
+      console.log(this.order)
+    },
   },
 
   mounted() {

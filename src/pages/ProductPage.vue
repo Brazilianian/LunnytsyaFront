@@ -1,5 +1,4 @@
 <template>
-  <nav-bar @admin="changeAdmin"></nav-bar>
 
   <div v-if="errorMessage !== ''" class="text-center text-danger mt-5 pt-5">
     <h4 class="mt-3">{{ errorMessage }}</h4>
@@ -17,9 +16,15 @@
 
         <h5 class="white-space-wrap">{{ product.description }}</h5>
 
-        <button class="btn btn-primary float-end" @click="addToBasket">
-          <fas icon="cart-plus"></fas>
-        </button>
+        <div v-if="!basketRefresh">
+          <button v-if="!isPresent(product.id)" class="btn btn-primary float-end" @click="addToBasket">
+            <fas icon="cart-plus"></fas>
+            Додати в кошик
+          </button>
+          <button v-else class="btn btn-success float-end" @click="removeFromBasket">
+            <fas icon="check"></fas>
+          </button>
+        </div>
 
       </div>
     </div>
@@ -33,6 +38,7 @@
               class="btn btn-danger float-end mx-2"
           >
             <fas icon="trash-alt"></fas>
+            Видалити
           </button>
 
           <button
@@ -40,6 +46,7 @@
               data-bs-toggle="modal" data-bs-target="#staticBackdrop"
           >
             <fas icon="edit"></fas>
+            Редагувати
           </button>
 
           <div class="modal fade" id="staticBackdrop" data-bs-backdrop="static" data-bs-keyboard="false"
@@ -139,6 +146,22 @@ import axios from "axios";
 export default {
   data() {
     return {
+      basketRefresh: false,
+
+      order: {
+        date: '',
+        orderedProducts: [
+          {
+            count: 0,
+            orderStatus: '',
+            product: {
+              id: 0
+            },
+          }
+        ],
+        user: {},
+      },
+
       product: {
         id: 0,
         image: '',
@@ -147,6 +170,7 @@ export default {
         name: '',
         visible: true,
       },
+
       productValidation: {},
       errorMessage: '',
       isAdmin: false,
@@ -155,10 +179,28 @@ export default {
   },
 
   methods: {
-    addToBasket() {
-      let order = JSON.parse(localStorage.getItem('order'));
-      console.log(order)
+    isPresent(id) {
+      if (this.order !== null) {
+        for (let i = 0; i < this.order.orderedProducts.length; i++) {
+          if (this.order.orderedProducts[i].product.id === id) {
+            return true;
+          }
+        }
+      }
+      return false;
+    },
 
+    removeFromBasket() {
+      for (let i = 0; i < this.order.orderedProducts.length; i++) {
+        if (this.order.orderedProducts[i].product.id === this.product.id) {
+          this.order.orderedProducts.splice(i, 1);
+          localStorage.setItem('order', JSON.stringify(this.order))
+          return;
+        }
+      }
+    },
+
+    addToBasket() {
       let orderedProduct = {
         product: {
           id: this.product.id
@@ -170,12 +212,12 @@ export default {
         updated: new Date(),
       };
 
-      if (order === null || order === undefined) {
-        order = {
+      if (this.order === null || this.order === undefined) {
+        this.order = {
           orderedProducts: [
               orderedProduct
           ],
-          user: {},
+          profile: {},
           date: new Date(),
           status: 'ENABLED',
           created: new Date(),
@@ -183,20 +225,18 @@ export default {
       } else {
 
         let presented = false;
-        order.orderedProducts.forEach(op => {
+        this.order.orderedProducts.forEach(op => {
           if (op.product.id === orderedProduct.product.id) {
             presented = true;
           }
         });
 
         if (!presented) {
-          order.orderedProducts[order.orderedProducts.length] = orderedProduct;
+          this.order.orderedProducts[this.order.orderedProducts.length] = orderedProduct;
         }
       }
 
-      order.updated = new Date();
-      localStorage.setItem('order', JSON.stringify(order));
-
+      localStorage.setItem('order', JSON.stringify(this.order));
     },
 
     changeProductIsVisible() {
@@ -264,13 +304,15 @@ export default {
       }
     },
 
-    changeAdmin(isAdmin) {
-      this.isAdmin = isAdmin;
+    getOrder() {
+      this.order = JSON.parse(localStorage.getItem('order'));
     }
   },
 
   async mounted() {
-    await this.getProduct();
+    this.getProduct();
+
+    this.getOrder();
   }
 }
 </script>

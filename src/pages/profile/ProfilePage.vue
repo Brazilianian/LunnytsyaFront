@@ -1,9 +1,5 @@
 <template>
   <div class="main vh-100 overflow-hidden text-white">
-    <nav-bar
-        @auth="authChange"
-        @admin="adminChange"
-    ></nav-bar>
 
     <div class="container mt-5">
       <div class="row">
@@ -12,10 +8,10 @@
 
           <img
               id="productEditImage"
-              :class="'img-thumbnail ' + [profile.image === null ? 'invisible' : '']"
+              :class="'img-thumbnail ' + [profile.image === null || profile.image === '' ? 'invisible' : '']"
               :src="profile.image"
           >
-          <img src="@/assets/images/no-image.png" class="img-thumbnail" v-if="profile.image === null">
+          <img src="@/assets/images/no-image.png" class="img-thumbnail" v-if="profile.image === null || profile.image === ''">
 
           <div class="text-center">
             <input type="file" name="image" class="form-control mt-1" accept="image/*" @change="imageChange"
@@ -52,11 +48,11 @@
 
           <button id="button" class="btn btn-success float-end" @click="saveChanges">Зберегти зміни</button>
 
-          <button class="btn btn-danger float-end mx-2" @click="logout">
+          <button class="btn btn-danger float-end mx-2" @click="userLogout">
             <fas icon="sign-out-alt"></fas>
           </button>
 
-          <div v-if="isAdmin">
+          <div v-if="profile.isAdmin">
             <h5 class="text-success fst-italic">Ви адмінітратор!</h5>
           </div>
         </div>
@@ -66,48 +62,31 @@
 </template>
 
 <script>
-import axios from "axios";
-import router from "../../router";
+import {getProfile, saveProfileChanges} from "../../../public/js/user_worker"
+import {logout} from "../../../public/js/page/profile_page";
+import {goToMainPage} from "../../../public/js/router_worker";
 
 export default {
   name: "ProfilePage",
   data() {
     return {
-      token: '',
-      isAuthorized: false,
-      isAdmin: false,
       profile: {
-        image: '',
-        username: '',
         name: '',
         surname: '',
-        authorities: [],
+        username: '',
         email: '',
+        image: '',
+        isAuthorized: false,
+        isAdmin: false,
       },
-      validation: {
-
-      }
+      validation: {},
     }
   },
 
   methods: {
-    authChange(isAuthorized) {
-      this.isAuthorized = isAuthorized;
-      if (isAuthorized) {
-        this.getProfile();
-      } else {
-        this.$router.push('/');
-      }
-    },
-
-    adminChange(isAdmin) {
-      this.isAdmin = isAdmin;
-    },
-
-    logout() {
+    userLogout() {
       if (confirm('Ви дійсно бажаєте вийти?')) {
-        localStorage.setItem('token', '');
-        router.push('/login');
+        logout();
       }
     },
 
@@ -116,8 +95,10 @@ export default {
       button.className = button.className.replace(classFrom, classTo);
     },
 
+    //todo import from js file maybe...
     imageChange(event) {
       let productEditImage = document.getElementById('productEditImage');
+
       const fileReader = new FileReader();
       fileReader.readAsDataURL(event.target.files[0]);
       fileReader.onload = (event) => {
@@ -128,37 +109,29 @@ export default {
       this.classChange("button", 'btn-success', 'btn-primary');
     },
 
-    async saveChanges() {
-      await axios.put('/profile', this.profile, {
-        headers: {
-          'Authorization': 'Bearer ' + this.token
-        }
-      }).then(response => {
-        if (response.status === 200) {
+
+    saveChanges() {
+      saveProfileChanges().then(profile => {
+        if (profile !== null) {
+          console.log(profile)
           this.classChange('button', 'btn-primary', 'btn-success');
         }
-        console.log(response)
-        }).catch(e => {
-          alert(e)
-      })
+      });
     },
+  },
 
-    getToken() {
-      return localStorage.getItem('token');
-    },
+  watch: {
+    user(newUser) {
+      if (newUser === null) {
+        goToMainPage();
+      }
+    }
+  },
 
-    async getProfile() {
-      this.token = this.getToken()
-      await axios.get('/profile', {
-        headers: {
-          'Authorization': 'Bearer ' + this.token
-        }
-      }).then(response => {
-        if (response.status === 200) {
-          this.profile = response.data;
-        }
-      })
-    },
+  mounted() {
+    getProfile().then(profile => {
+      this.profile = profile
+    });
   },
 }
 </script>

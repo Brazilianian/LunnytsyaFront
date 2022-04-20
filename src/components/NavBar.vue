@@ -1,6 +1,4 @@
 <template>
-
-
   <nav class="navbar navbar-dark bg-dark navbar-expand-lg fixed-top">
 
     <div class="container-fluid">
@@ -31,22 +29,34 @@
           </li>
         </ul>
 
-        <form class="d-flex" v-if="!isAuthorized">
-          <a href="/login" class="btn btn-outline-success" type="submit">Увійти</a>
+        <form class="d-flex me-2">
+          <button type="button" class="btn btn-outline-secondary" data-bs-toggle="modal" data-bs-target="#staticBackdrop">
+            <fas class="fs-5" icon="shopping-basket"></fas>
+          </button>
         </form>
 
+        <form class="d-flex" v-if="!isAuthorized">
+          <a href="/login" class="btn btn-outline-success" type="submit">
+            <fas icon="user"></fas>
+          </a>
+        </form>
 
         <form class="d-flex" v-if="isAuthorized">
-          <a href="/profile" class="btn btn-outline-success" type="submit">Профіль</a>
+          <a href="/profile" class="btn btn-outline-success" type="submit">
+            <fas icon="id-card"></fas>
+          </a>
         </form>
       </div>
     </div>
 
   </nav>
+
+
+  <basket-modal></basket-modal>
 </template>
 
 <script>
-import axios from "axios";
+import {checkIsAdmin, checkIsAuthorized} from "../../public/js/security";
 
 export default {
   name: "nav-bar",
@@ -57,81 +67,9 @@ export default {
     }
   },
 
-  methods: {
-    getToken() {
-      return localStorage.getItem("token");
-    },
-
-    checkIsAdmin() {
-      this.token = this.getToken();
-
-      axios.get('/admin/check', {
-        headers: {
-          'Authorization': 'Bearer ' + this.token
-        }
-      }).then(response => {
-        if (response.status === 200) {
-          this.isAdmin = true;
-          this.$emit('admin', true);
-        }
-      }).catch((e) => {
-        let exception = e.response.headers.exception;
-        if (e.response.status === 403 && exception !== null) {
-          this.refreshToken(false);
-        } else {
-          this.isAdmin = false;
-          this.$emit('admin', false);
-        }
-      })
-    },
-
-    refreshToken(isAuth) {
-      console.log('refresh token')
-      axios.get('/auth/refresh-token', {
-        headers: {
-          'Authorization': 'Bearer ' + this.token,
-          'isRefreshToken': 'true'
-        }
-      }).then(response => {
-        if (response.status === 200) {
-          console.log('success refresh')
-          localStorage.setItem('token', response.data.jwtToken);
-          if (isAuth) {
-            this.checkIsAuthorized();
-          } else {
-            this.checkIsAdmin()
-          }
-        }
-      })
-    },
-
-    checkIsAuthorized() {
-      this.token = this.getToken();
-
-      axios.get('/check/auth', {
-        headers: {
-          'Authorization': 'Bearer ' + this.token
-        }
-      }).then(() => {
-        this.isAuthorized = true;
-        this.$emit('auth', true);
-      }).catch(e => {
-        if (e.response.status === 403) {
-          let exception = e.response.headers.exception;
-          if (exception !== null && exception !== undefined && exception.includes('JWT expired')) {
-            this.refreshToken(true);
-          } else {
-            this.isAuthorized = false;
-            this.$emit('auth', false);
-          }
-        }
-      })
-    }
-  },
-
   mounted() {
-    this.checkIsAuthorized()
-    this.checkIsAdmin();
+    checkIsAuthorized().then(res => this.isAuthorized = res);
+    checkIsAdmin().then(res => this.isAdmin = res);
   }
 }
 </script>

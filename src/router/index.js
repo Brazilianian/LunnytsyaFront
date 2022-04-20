@@ -7,6 +7,7 @@ import Product from "../pages/ProductPage";
 import LoginPage from "../pages/auth/LoginPage";
 import RegistrationPage from "../pages/auth/RegistrationPage";
 import ProfilePage from "../pages/profile/ProfilePage";
+import Order from "../pages/Order";
 
 const routes = [
   {
@@ -40,6 +41,10 @@ const routes = [
   {
     path: '/profile',
     component: ProfilePage
+  },
+  {
+    path: '/order',
+    component: Order
   }
 ]
 

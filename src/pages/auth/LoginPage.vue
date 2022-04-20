@@ -1,8 +1,5 @@
 <template>
 
-  <nav-bar></nav-bar>
-
-
   <div class="main overflow-hidden">
     <div class="container">
       <div class="row">

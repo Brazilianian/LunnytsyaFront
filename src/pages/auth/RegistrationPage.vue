@@ -1,7 +1,4 @@
 <template>
-
-  <nav-bar></nav-bar>
-
   <div class="main overflow-hidden">
     <div class="container">
       <div class="row">
@@ -39,8 +36,8 @@
           </div>
           <button type="submit" class="btn btn-primary float-end" @click="registration">Зареєструватися</button>
           <h5>
-            Не маєте акаунт?
-            <a href="/registration" class="link-primary">Зареєструйтесь</a>
+            Вже зарєстровані?
+            <a href="/login" class="link-primary">Увійдіть!</a>
           </h5>
         </div>
         <div class="col-2"></div>

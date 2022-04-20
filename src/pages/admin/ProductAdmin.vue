@@ -1,7 +1,4 @@
-<template>
-
-  <nav-bar @admin="adminChange"></nav-bar>
-
+<template v-if="isAdmin">
   <div class="container mt-5 pt-3">
 
     <h3 class="text-center">Створення продукту</h3>
@@ -81,6 +78,7 @@
 
 <script>
 import axios from "axios";
+import {checkIsAdmin} from "../../../public/js/security";
 
 export default {
   name: "SecondPage",
@@ -99,6 +97,7 @@ export default {
       file: '',
     }
   },
+
   methods: {
     adminChange(isAdmin) {
       if (!isAdmin) {
@@ -148,6 +147,19 @@ export default {
               }
           );
     },
+  },
+
+  mounted() {
+
+  },
+
+  beforeCreate() {
+    checkIsAdmin().then(isAdmin => {
+      this.isAdmin = isAdmin;
+      if(!isAdmin){
+        this.$router.push('/');
+      }
+    })
   }
 }
 </script>

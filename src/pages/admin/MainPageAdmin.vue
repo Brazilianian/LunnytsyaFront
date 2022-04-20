@@ -1,6 +1,4 @@
-<template>
-  <nav-bar class="mb-5"></nav-bar>
-
+<template v-if="isAdmin">
   <h3 class="text-center mt-5 pt-2">Зображення головної сторінки</h3>
 
   <div
@@ -111,6 +109,7 @@
 <script>
 
 import axios from "axios";
+import {checkIsAdmin} from "../../../public/js/security";
 
 export default {
   data() {
@@ -125,8 +124,7 @@ export default {
         description: '',
       },
       backgroundValidation: '',
-      authorValidation: {
-      },
+      authorValidation: {},
       token: '',
       isAdmin: ''
     }
@@ -136,10 +134,6 @@ export default {
     changeButtonClass(id, from, to) {
       let button = document.getElementById(id);
       button.className = button.className.replace(from, to);
-    },
-
-    getToken() {
-      return localStorage.getItem("token");
     },
 
     backgroundImageChange(event) {
@@ -176,7 +170,7 @@ export default {
         fileReader.onload = async (event) => {
           this.backgroundImage.content = event.target.result;
           try {
-            await axios.post('/main-page/background-image', this.backgroundImage, {
+            axios.post('/main-page/background-image', this.backgroundImage, {
               headers: {
                 'Authorization': 'Bearer ' + this.token,
               }
@@ -208,9 +202,9 @@ export default {
       }
     },
 
-    async setAuthor() {
+    setAuthor() {
       try {
-        await axios.post('/main-page/author', this.author, {
+        axios.post('/main-page/author', this.author, {
           headers: {
             'Authorization': 'Bearer ' + this.token
           }
@@ -228,28 +222,29 @@ export default {
       }
     },
 
-    async getBackgroundImage() {
-      await axios
+    getBackgroundImage() {
+      axios
           .get('/main-page/background-image/get-main', {
             headers: {
               'Authorization': 'Bearer ' + this.token
             }
           }).then(response => {
-            if (response.status === 200) {
-              document.getElementById('background').style.backgroundImage = 'url(' + response.data.content + ')';
-            }
-          })
+        if (response.status === 200) {
+          document.getElementById('background').style.backgroundImage = 'url(' + response.data.content + ')';
+        }
+      })
           .catch(error => {
             this.backgroundValidation = error.response.data;
           })
     },
 
-    async getAuthor() {
-      await axios.get('/main-page/author', {
-        headers: {
-          'Authorization': 'Bearer ' + this.token
-        }
-      }).then(response => {
+    getAuthor() {
+      axios
+          .get('/main-page/author', {
+            headers: {
+              'Authorization': 'Bearer ' + this.token
+            }
+          }).then(response => {
         if (response.data !== '') {
           this.author = response.data;
         }
@@ -263,9 +258,17 @@ export default {
       this.isAdmin = isAdmin;
     },
   },
-  async mounted() {
-    await this.getBackgroundImage();
-    await this.getAuthor();
+
+  beforeCreate() {
+    checkIsAdmin().then(isAdmin => {
+      this.isAdmin = isAdmin;
+      if(isAdmin) {
+        this.getBackgroundImage();
+        this.getAuthor();
+      } else {
+        this.$router.push('/');
+      }
+    })
   }
 }
 </script>

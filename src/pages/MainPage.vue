@@ -1,20 +1,9 @@
 <template>
-
-  <nav-bar
-      :isAdmin="isAdmin"
-      :isAuthorized="isAuthorized"
-  >
-
-  </nav-bar>
-
   <div
       id="background"
       class="vh-75 cover no-repeat bg-position-center attachment-fixed"
   >
   </div>
-
-
-  <basket-modal/>
 
   <div class="container vh-100 vw-100">
     <div class="row mt-5">
@@ -50,10 +39,8 @@
 
 <script>
 import axios from "axios";
-import BasketModal from "../components/BasketModal";
 
 export default {
-  components: {BasketModal},
 
   data() {
     return {
