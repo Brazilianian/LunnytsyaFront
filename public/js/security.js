@@ -66,7 +66,7 @@ export function refreshToken(callback) {
     }).then(response => {
         if (response.status === 200) {
             localStorage.setItem('token', response.data.jwtToken);
-           return callback();
+            return callback();
         }
     })
 }

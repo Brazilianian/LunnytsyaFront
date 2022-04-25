@@ -1,10 +1,5 @@
 <template>
-
-  <div v-if="errorMessage !== ''" class="text-center text-danger mt-5 pt-5">
-    <h4 class="mt-3">{{ errorMessage }}</h4>
-  </div>
-
-  <div v-else class="container mt-5 pt-5">
+  <div class="container mt-5 pt-5">
     <div class="row">
       <div class="col-md-4 border-end">
         <img :src="product.image" class="img-thumbnail">
@@ -16,8 +11,8 @@
 
         <h5 class="white-space-wrap">{{ product.description }}</h5>
 
-        <div v-if="!basketRefresh">
-          <button v-if="!isPresent(product.id)" class="btn btn-primary float-end" @click="addToBasket">
+        <div>
+          <button v-if="!isPresent" class="btn btn-primary float-end" @click="addToBasket">
             <fas icon="cart-plus"></fas>
             Додати в кошик
           </button>
@@ -41,96 +36,13 @@
             Видалити
           </button>
 
-          <button
-              class="btn btn-primary float-end mx-2"
-              data-bs-toggle="modal" data-bs-target="#staticBackdrop"
-          >
+          <button type="button" class="btn btn-primary float-end" data-bs-toggle="modal" data-bs-target="#productEdit">
             <fas icon="edit"></fas>
             Редагувати
           </button>
 
-          <div class="modal fade" id="staticBackdrop" data-bs-backdrop="static" data-bs-keyboard="false"
-               tabindex="-1" aria-labelledby="staticBackdropLabel" aria-hidden="true">
-            <div class="modal-dialog modal-xl">
-              <div class="modal-content">
-                <div class="modal-header">
-                  <h5 class="modal-title" id="staticBackdropLabel">Редагування товару</h5>
-                  <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
-                </div>
-                <div class="modal-body p2-">
-                  <div class="d-flex border-bottom my-2">
-                    <div class="w-25 pe-2 border-end">
-                      <img id="productEditImage" :src="product.image" class="img-thumbnail">
-                    </div>
-                    <div class="w-75 ps-2">
-                      <h5 class="text-center fst-italic">{{ product.name }}</h5>
-                      <h5>₴{{ product.price }}</h5>
-                      <h6 class="white-space-wrap">{{ product.description }}</h6>
-                    </div>
-                  </div>
-                  <div class="d-flex my-2">
-                    <div class="w-25 border-end pe-2">
-                      <div class="has-validation">
-                        <input @change="changeProductImage" ref="productImage" type="file" accept="image/*"
-                               :class="productValidation.image !== undefined ? 'form-control is-invalid' : 'form-control'">
-                        <div v-if="productValidation.image !== undefined" class="invalid-feedback">
-                          {{ productValidation.image }}
-                        </div>
-                      </div>
+          <product-edit-modal :product="product"></product-edit-modal>
 
-                      <hr>
-
-                      <button
-                          @click="changeProductIsVisible"
-                          class="btn btn-primary float-end mx-2"
-                      >
-                        <fas v-if="product.visible" icon="eye"></fas>
-                        <fas v-else icon="eye-slash"></fas>
-                      </button>
-                    </div>
-                    <div class="w-75 ms-2">
-                      <div class="has-validation">
-                        <label for="name" class="form-label mt-2">Назва</label>
-                        <input id="name" type="text"
-                               :class="productValidation.name !== undefined ? 'form-control is-invalid' : 'form-control'"
-                               v-model="product.name">
-                        <div v-if="productValidation.name !== undefined" class="invalid-feedback">
-                          {{ productValidation.name }}
-                        </div>
-                      </div>
-
-                      <div class="has-validation">
-                        <label for="price" class="form-label mt-2">Ціна</label>
-                        <input id="price" type="number" min="0"
-                               :class="productValidation.price !== undefined ? 'form-control is-invalid' : 'form-control'"
-                               v-model="product.price">
-
-                        <div v-if="productValidation.price !== undefined" class="invalid-feedback">
-                          {{ productValidation.price }}
-                        </div>
-                      </div>
-
-                      <div class="has-validation">
-                        <label for="description" class="form-label mt-2">Опис</label>
-                        <textarea id="description"
-                                  :class="productValidation.description !== undefined ? 'form-control no-resize is-invalid' : 'form-control no-resize'"
-                                  rows="7"
-                                  v-model="product.description"></textarea>
-
-                        <div v-if="productValidation.description !== undefined" class="invalid-feedback">
-                          {{ productValidation.description }}
-                        </div>
-                      </div>
-                    </div>
-                  </div>
-                </div>
-                <div class="modal-footer">
-                  <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Закрити</button>
-                  <button @click="saveChanges" type="button" class="btn btn-primary">Зберегти</button>
-                </div>
-              </div>
-            </div>
-          </div>
         </div>
       </div>
     </div>
@@ -140,26 +52,25 @@
   </div>
 </template>
 
+
 <script>
-import axios from "axios";
+
+import {getOrder, addToOrder, isProductPresentInOrder, removeFromOrder} from "../../public/js/order_worker";
+import {deleteProductById, getProductById} from "../../public/js/product_worker";
+import {checkIsAdmin} from "../../public/js/security";
 
 export default {
   data() {
     return {
-      basketRefresh: false,
-
       order: {
-        date: '',
         orderedProducts: [
           {
             count: 0,
-            orderStatus: '',
             product: {
-              id: 0
-            },
-          }
-        ],
-        user: {},
+              id: 0,
+            }
+          },
+        ]
       },
 
       product: {
@@ -172,147 +83,44 @@ export default {
       },
 
       productValidation: {},
-      errorMessage: '',
+
+      isPresent: false,
       isAdmin: false,
-      token: '',
     }
   },
 
   methods: {
-    isPresent(id) {
-      if (this.order !== null) {
-        for (let i = 0; i < this.order.orderedProducts.length; i++) {
-          if (this.order.orderedProducts[i].product.id === id) {
-            return true;
-          }
-        }
-      }
-      return false;
-    },
-
-    removeFromBasket() {
-      for (let i = 0; i < this.order.orderedProducts.length; i++) {
-        if (this.order.orderedProducts[i].product.id === this.product.id) {
-          this.order.orderedProducts.splice(i, 1);
-          localStorage.setItem('order', JSON.stringify(this.order))
-          return;
-        }
-      }
+    checkIsPresent() {
+      this.isPresent = isProductPresentInOrder(this.product);
     },
 
     addToBasket() {
-      let orderedProduct = {
-        product: {
-          id: this.product.id
-        },
-        orderStatus: 'IN_BASKET',
-        count: 1,
-        status: 'ENABLED',
-        created: new Date(),
-        updated: new Date(),
-      };
-
-      if (this.order === null || this.order === undefined) {
-        this.order = {
-          orderedProducts: [
-              orderedProduct
-          ],
-          profile: {},
-          date: new Date(),
-          status: 'ENABLED',
-          created: new Date(),
-        }
-      } else {
-
-        let presented = false;
-        this.order.orderedProducts.forEach(op => {
-          if (op.product.id === orderedProduct.product.id) {
-            presented = true;
-          }
-        });
-
-        if (!presented) {
-          this.order.orderedProducts[this.order.orderedProducts.length] = orderedProduct;
-        }
-      }
-
-      localStorage.setItem('order', JSON.stringify(this.order));
+      this.order = addToOrder(this.product);
+      this.checkIsPresent();
     },
 
-    changeProductIsVisible() {
-      this.product.visible = !this.product.visible;
+    removeFromBasket() {
+      this.order = removeFromOrder(this.product);
+      this.checkIsPresent();
     },
 
-    changeProductImage(event) {
-      let productEditImage = document.getElementById('productEditImage');
-      const fileReader = new FileReader();
-      fileReader.readAsDataURL(event.target.files[0]);
-      fileReader.onload = (event) => {
-        productEditImage.src = event.target.result;
-        this.product.image = event.target.result;
-      }
-    },
-
-    async saveChanges() {
-      let result = confirm("Ви дійсно бажаєте зберегти зміни?")
-      if (result) {
-        try {
-          await axios.put('/product', this.product)
-              .then(() => {
-                    location.reload();
-                  }
-              )
-              .catch(error => {
-                if (error.response.status === 422) {
-                  this.productValidation = error.response.data;
-                } else {
-                  alert(error.response);
-                }
-              })
-        } catch (e) {
-          alert(e);
-        }
-      }
-    },
-
-    async deleteProduct() {
+    deleteProduct() {
       let result = confirm('Ви впевнені, що бажаєте видалити продукт "' + this.product.name + '"?');
       if (result) {
-        try {
-          await axios.delete('/product/' + this.product.id)
-              .then(() => {
-                location.reload();
-              })
-              .catch(error => alert(error));
-        } catch (e) {
-          alert(e);
+        if (deleteProductById(this.product.id) === null) {
+          alert('error');
         }
       }
     },
-
-    async getProduct() {
-      try {
-        await axios.get('/product/' + this.$route.params.id)
-            .then(response => {
-              this.product = response.data;
-            }).catch(error => {
-              this.errorMessage = error;
-            });
-      } catch (e) {
-        this.errorMessage = e;
-        alert(e);
-      }
-    },
-
-    getOrder() {
-      this.order = JSON.parse(localStorage.getItem('order'));
-    }
   },
 
-  async mounted() {
-    this.getProduct();
+  created() {
+    getProductById(this.$route.params.id)
+        .then(product => this.product = product);
 
-    this.getOrder();
+    this.order = getOrder();
+
+    this.isAdmin = checkIsAdmin();
   }
 }
 </script>

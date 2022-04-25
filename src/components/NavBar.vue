@@ -23,14 +23,12 @@
             <ul class="dropdown-menu" aria-labelledby="navbarDropdown">
               <li><a class="dropdown-item" href="/admin">Створення продукту</a></li>
               <li><a class="dropdown-item" href="/admin/main-page">Налаштування головної сторінки</a></li>
-              <li><a class="dropdown-item" href="#">Something else here</a></li>
-              <li><a class="dropdown-item" href="#">Something else here</a></li>
             </ul>
           </li>
         </ul>
 
         <form class="d-flex me-2">
-          <button type="button" class="btn btn-outline-secondary" data-bs-toggle="modal" data-bs-target="#staticBackdrop">
+          <button type="button" class="btn btn-outline-secondary" data-bs-toggle="modal" data-bs-target="#basket">
             <fas class="fs-5" icon="shopping-basket"></fas>
           </button>
         </form>
