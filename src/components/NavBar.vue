@@ -28,7 +28,9 @@
         </ul>
 
         <form class="d-flex me-2">
-          <button type="button" class="btn btn-outline-secondary" data-bs-toggle="modal" data-bs-target="#basket">
+          <button
+              @click="fillBasket"
+              type="button" class="btn btn-outline-secondary" data-bs-toggle="modal" data-bs-target="#basket">
             <fas class="fs-5" icon="shopping-basket"></fas>
           </button>
         </form>
@@ -50,7 +52,7 @@
   </nav>
 
 
-  <basket-modal></basket-modal>
+  <basket-modal ref="basket"></basket-modal>
 </template>
 
 <script>
@@ -62,6 +64,12 @@ export default {
     return {
       isAuthorized: false,
       isAdmin: false,
+    }
+  },
+
+  methods: {
+    fillBasket() {
+      this.$refs.basket.fillBasket();
     }
   },
 

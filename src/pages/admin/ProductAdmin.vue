@@ -28,7 +28,7 @@
 
           <div :class="[productValidation.image !== undefined ? 'has-validation' : '']">
             <label class="form-label" for="image">Виберіть зображення</label>
-            <input @change="setImage" id="image" ref="file" name="image" type="file" accept="image/*"
+            <input @change="setImage" id="image" name="image" type="file" accept="image/*"
                    :class="'form-control ' + [productValidation.image !== undefined ? 'is-invalid' : '']">
             <div v-if="productValidation.image !== undefined" class="invalid-feedback">
               {{ productValidation.image }}
@@ -77,8 +77,8 @@
 </template>
 
 <script>
-import axios from "axios";
 import {checkIsAdmin} from "../../../public/js/security";
+import {createProduct} from "../../../public/js/product_worker";
 
 export default {
   name: "SecondPage",
@@ -99,69 +99,45 @@ export default {
   },
 
   methods: {
-    adminChange(isAdmin) {
-      if (!isAdmin) {
-        this.$router.push('/');
-      }
-      this.isAdmin = isAdmin;
-    },
-
     setImage(event) {
-      let img = document.getElementById('productImage')
-      let file = event.target.files[0];
-      const reader = new FileReader();
-      reader.readAsDataURL(file);
-
-      reader.onload = function () {
-        img.src = reader.result;
-      }
-
-      this.file = this.$refs.file.files[0];
+      let reader = new FileReader();
+      reader.readAsDataURL(event.target.files[0]);
+      reader.onload = (reader) => {
+        this.product.image = reader.target.result;
+      };
     },
 
     createProduct() {
-      if (this.file !== null && this.file !== '') {
-        let fileReader = new FileReader();
-        fileReader.readAsDataURL(this.file);
-        fileReader.onload = this.createProductMessage;
-      } else {
-        this.createProductMessage(null);
-      }
-    },
-
-    createProductMessage(event) {
-      if (event != null) {
-        this.product.image = event.target.result;
-      }
-      axios.post('/product', this.product)
-          .then(() => {
-            location.reload();
-          })
-          .catch(
-              error => {
-                if (error.response.status === 422) {
-                  this.productValidation = error.response.data;
-                } else {
-                  alert(error.response);
-                }
-              }
-          );
-    },
+      createProduct(this.product).then(() => {
+        this.$router.go(0);
+      }).catch(error => {
+        if (error.response.status === 422) {
+          this.productValidation = error.response;
+        }
+      })
+    }
   },
 
-  mounted() {
-
+  watch: {
+    'product.image': {
+      handler: function (image) {
+        let authorImg = document.getElementById('productImage');
+        authorImg.src = image;
+      },
+      deep: true
+    },
   },
 
   beforeCreate() {
     checkIsAdmin().then(isAdmin => {
       this.isAdmin = isAdmin;
-      if(!isAdmin){
+      if (!isAdmin) {
         this.$router.push('/');
       }
     })
   }
 }
+
 </script>
 
 <style scoped>

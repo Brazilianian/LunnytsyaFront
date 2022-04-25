@@ -65,7 +65,8 @@
 
 
 <script>
-import axios from "axios";
+import {getProductById} from "../../../public/js/product_worker";
+import {getOrder, removeFromOrder} from "../../../public/js/order_worker";
 
 export default {
   name: "basket-modal",
@@ -73,38 +74,34 @@ export default {
   data() {
     return {
       order: null,
-      products: null,
+      products: [],
     }
   },
 
   methods: {
     getTotalPrice() {
       let total = 0;
-      for (let i = 0; i < this.products.length; i++) {
-        total += (this.products[i].price * (this.getOrderedProductById(this.products[i].id).count));
-      }
+      this.products.forEach(product => {
+        total += product * (this.getOrderedProductById(product.id).count);
+      });
       return total;
     },
 
     removeProductFromOrder(id) {
-      this.$emit('remove', id);
-
-      for (let i = 0; i < this.products.length; i++) {
-        if (this.products[i].id === id) {
-          this.products.splice(i, 1);
-          break;
-        }
-      }
+      removeFromOrder(id);
+      this.products = this.products.filter(product => product.id !== id);
     },
 
     fillBasket() {
-      this.order?.orderedProducts.forEach(orderedProduct => {
-        axios.get('/product/' + orderedProduct.product.id).then(response => {
-          if (response.status === 200) {
-            this.products[this.products.length] = response.data;
-          }
+      this.order = getOrder();
+
+      if (this.order !== null) {
+        this.order.orderedProducts.forEach(orderedProduct => {
+          getProductById(orderedProduct.product.id).then(product => {
+            this.products[this.products.length] = product;
+          })
         })
-      })
+      }
     },
 
     getOrderedProductById(id) {
@@ -114,25 +111,6 @@ export default {
         }
       }
     },
-
-    removeProduct(id) {
-      for (let i = 0; i < this.order.orderedProducts.length; i++) {
-        if (this.order.orderedProducts[i].product.id === id) {
-          this.order.orderedProducts.splice(i, 1);
-          localStorage.setItem('order', JSON.stringify(this.order));
-          break;
-        }
-      }
-    },
-
-    refreshBasket() {
-      this.order = JSON.parse(localStorage.getItem('order'));
-      console.log(this.order)
-    },
-  },
-
-  mounted() {
-    this.fillBasket();
   },
 }
 </script>

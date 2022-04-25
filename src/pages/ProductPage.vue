@@ -62,17 +62,6 @@ import {checkIsAdmin} from "../../public/js/security";
 export default {
   data() {
     return {
-      order: {
-        orderedProducts: [
-          {
-            count: 0,
-            product: {
-              id: 0,
-            }
-          },
-        ]
-      },
-
       product: {
         id: 0,
         image: '',
@@ -90,18 +79,21 @@ export default {
   },
 
   methods: {
-    checkIsPresent() {
-      this.isPresent = isProductPresentInOrder(this.product);
-    },
 
     addToBasket() {
-      this.order = addToOrder(this.product);
-      this.checkIsPresent();
+      addToOrder(this.product).then(() => {
+        isProductPresentInOrder(this.product).then(isPresent => {
+          console.log(isPresent);
+        })
+      })
     },
 
     removeFromBasket() {
-      this.order = removeFromOrder(this.product);
-      this.checkIsPresent();
+      removeFromOrder(this.product).then(() => {
+        isProductPresentInOrder(this.product).then(isPresent => {
+          console.log(isPresent);
+        });
+      })
     },
 
     deleteProduct() {
@@ -116,7 +108,10 @@ export default {
 
   created() {
     getProductById(this.$route.params.id)
-        .then(product => this.product = product);
+        .then(product => {
+          this.product = product
+          this.isPresent = isProductPresentInOrder(product);
+        });
 
     this.order = getOrder();
 

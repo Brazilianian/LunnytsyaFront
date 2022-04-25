@@ -58,6 +58,7 @@ export function checkForRefreshToken(response) {
 }
 
 export function refreshToken(callback) {
+    token = getToken();
     return axios.get('/auth/refresh-token', {
         headers: {
             'Authorization': 'Bearer ' + token,
