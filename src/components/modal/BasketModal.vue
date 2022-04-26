@@ -38,13 +38,13 @@
               <div class="col-1 pt-2">
                 <button
                     class="btn btn-outline-danger"
-                    @click="removeProductFromOrder(product.id)"
+                    @click="removeProductFromOrder(product)"
                 >
                   <fas icon="times"></fas>
                 </button>
               </div>
             </div>
-            <div class="row float-end" v-if="order !== null">
+            <div class="row float-end" v-if="order?.orderedProducts.length !== 0">
               <h5>Загальна ціна - ₴{{ getTotalPrice() }}</h5>
             </div>
             <div class="row" v-else>
@@ -53,7 +53,7 @@
           </div>
         </div>
         <div class="modal-footer">
-          <a href="/order" v-if="order !== null">
+          <a href="/order" v-if="order?.orderedProducts.length !== 0">
             <button type="button" class="btn btn-success" data-bs-dismiss="modal">Перейти до оформлення заказу</button>
           </a>
           <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Закрити</button>
@@ -81,15 +81,15 @@ export default {
   methods: {
     getTotalPrice() {
       let total = 0;
-      this.products.forEach(product => {
-        total += product * (this.getOrderedProductById(product.id).count);
-      });
+      for (let i = 0; i < this.products.length; i++) {
+        total += this.products[i].price * (this.getOrderedProductById(this.products[i].id).count);
+      }
       return total;
     },
 
-    removeProductFromOrder(id) {
-      removeFromOrder(id);
-      this.products = this.products.filter(product => product.id !== id);
+    removeProductFromOrder(product) {
+      removeFromOrder(product);
+      this.products = this.products.filter(p => p.id !== product.id);
     },
 
     fillBasket() {

@@ -36,9 +36,9 @@ export function addToOrder(product) {
     return saveOrder(order);
 }
 
-export function removeFromOrder(productId) {
+export function removeFromOrder(product) {
     let order = getOrder();
-    order.orderedProducts = order.orderedProducts.filter(orderedProduct => orderedProduct.product.id !== productId);
+    order.orderedProducts = order.orderedProducts.filter(orderedProduct => orderedProduct.product.id !== product.id);
     return saveOrder(order);
 }
 

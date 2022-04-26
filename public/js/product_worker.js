@@ -14,7 +14,7 @@ export function createProduct(product) {
             return response;
         })
         .catch((error) => {
-                return error.response;
+            return error.response;
             }
         );
 }

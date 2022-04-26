@@ -159,8 +159,8 @@ export default {
     saveBackground() {
       saveBackground(this.backgroundImage).then((response) => {
         if (response.status === 200) {
-          changeButtonClass('author-button', 'btn-primary', 'btn-success');
-          clearValidation('background-image');
+          changeButtonClass('background-button', 'btn-primary', 'btn-success');
+          clearValidation(['background-image']);
           this.backgroundValidation = '';
         } else if (response.status === 422) {
           this.backgroundValidation = response.data;
@@ -194,6 +194,14 @@ export default {
       handler: function (content) {
         let backgroundImageDiv = document.getElementById('background');
         backgroundImageDiv.style.backgroundImage = 'url(' + content + ')';
+      },
+      deep: true
+    },
+
+    'author.description': {
+      handler: function () {
+        changeButtonClass('author-button', 'btn-success', 'btn-primary');
+        clearValidation(['author-description'])
       },
       deep: true
     }

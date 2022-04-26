@@ -108,11 +108,11 @@ export default {
     },
 
     createProduct() {
-      createProduct(this.product).then(() => {
-        this.$router.go(0);
-      }).catch(error => {
-        if (error.response.status === 422) {
-          this.productValidation = error.response;
+      createProduct(this.product).then((response) => {
+        if (response.status === 200) {
+          this.$router.go(0);
+        } else if (response.status === 422) {
+          this.productValidation = response.data;
         }
       })
     }

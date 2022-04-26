@@ -79,21 +79,19 @@ export default {
   },
 
   methods: {
-
     addToBasket() {
-      addToOrder(this.product).then(() => {
-        isProductPresentInOrder(this.product).then(isPresent => {
-          console.log(isPresent);
-        })
-      })
+      addToOrder(this.product);
+      this.isPresent = isProductPresentInOrder(this.product);
     },
 
     removeFromBasket() {
-      removeFromOrder(this.product).then(() => {
-        isProductPresentInOrder(this.product).then(isPresent => {
-          console.log(isPresent);
-        });
-      })
+      removeFromOrder(this.product)
+      //     .then(() => {
+      //   isProductPresentInOrder(this.product).then(isPresent => {
+      //     console.log(isPresent);
+      //   });
+      // })
+      this.isPresent = isProductPresentInOrder(this.product);
     },
 
     deleteProduct() {
