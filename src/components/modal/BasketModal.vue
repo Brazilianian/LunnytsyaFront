@@ -29,6 +29,7 @@
               <div class="col-4 border-2 border-end">
                 <h5>Кількість:</h5>
                 <input
+                    @change="changeCount"
                     type="number" min="1"
                     v-model="(getOrderedProductById(product.id)).count"
                     class="form-control"
@@ -66,7 +67,7 @@
 
 <script>
 import {getProductById} from "../../../public/js/product_worker";
-import {getOrder, removeFromOrder} from "../../../public/js/order_worker";
+import {getOrder, removeFromOrder, saveOrder} from "../../../public/js/order_worker";
 
 export default {
   name: "basket-modal",
@@ -93,15 +94,14 @@ export default {
     },
 
     fillBasket() {
+      this.products = [];
       this.order = getOrder();
 
-      if (this.order !== null) {
-        this.order.orderedProducts.forEach(orderedProduct => {
-          getProductById(orderedProduct.product.id).then(product => {
-            this.products[this.products.length] = product;
-          })
+      this.order.orderedProducts.forEach(orderedProduct => {
+        getProductById(orderedProduct.product.id).then(product => {
+          this.products[this.products.length] = product;
         })
-      }
+      })
     },
 
     getOrderedProductById(id) {
@@ -111,7 +111,11 @@ export default {
         }
       }
     },
-  },
+
+    changeCount() {
+      saveOrder(this.order);
+    }
+  }
 }
 </script>
 

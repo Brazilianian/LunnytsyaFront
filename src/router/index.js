@@ -7,7 +7,7 @@ import Product from "../pages/ProductPage";
 import LoginPage from "../pages/auth/LoginPage";
 import RegistrationPage from "../pages/auth/RegistrationPage";
 import ProfilePage from "../pages/profile/ProfilePage";
-import Order from "../pages/Order";
+import Order from "../pages/order/Order";
 
 const routes = [
   {

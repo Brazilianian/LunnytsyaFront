@@ -32,14 +32,12 @@ export function saveProfileChanges(profile) {
             'Authorization': 'Bearer ' + token
         }
     }).then(response => {
-        if (response.status === 200) {
-            return profile;
-        } else {
-            return null;
-        }
+        return response;
     }).catch((e) => {
         if (checkForRefreshToken(e.response)) {
             return refreshToken(saveProfileChanges);
+        } else {
+            return e.response;
         }
     });
 }
@@ -51,5 +49,6 @@ function getProfileFromUser(user) {
         username: user.username,
         email: user.email,
         image: user.image,
+        phone: user.phone,
     }
 }

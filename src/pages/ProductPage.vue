@@ -86,11 +86,6 @@ export default {
 
     removeFromBasket() {
       removeFromOrder(this.product)
-      //     .then(() => {
-      //   isProductPresentInOrder(this.product).then(isPresent => {
-      //     console.log(isPresent);
-      //   });
-      // })
       this.isPresent = isProductPresentInOrder(this.product);
     },
 

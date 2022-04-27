@@ -11,7 +11,8 @@
               :class="'img-thumbnail ' + [profile.image === null || profile.image === '' ? 'invisible' : '']"
               :src="profile.image"
           >
-          <img src="@/assets/images/no-image.png" class="img-thumbnail" v-if="profile.image === null || profile.image === ''">
+          <img src="@/assets/images/no-image.png" class="img-thumbnail"
+               v-if="profile.image === null || profile.image === ''">
 
           <div class="text-center">
             <input type="file" name="image" class="form-control mt-1" accept="image/*" @change="imageChange"
@@ -27,21 +28,45 @@
             <tbody>
             <tr>
               <td>Ім'я:</td>
-              <td><input type="text" class="form-control" placeholder="Введіть ім'я"
-                         v-model="profile.name"
-                         @change="classChange('button', 'btn-success', 'btn-primary')"></td>
+              <td class="has-validation">
+                <input type="text" class="form-control" placeholder="Введіть ім'я"
+                         v-model="profile.name">
+                <div v-if="profileValidation?.name !== undefined" class="invalid-feedback">
+                  {{ profileValidation.name }}
+                </div>
+              </td>
             </tr>
             <tr>
               <td>Прізвище:</td>
-              <td><input type="text" class="form-control" placeholder="Введіть прізвище"
-                         v-model="profile.surname"
-                         @change="classChange('button', 'btn-success', 'btn-primary')"></td>
+              <td class="has-validation">
+                <input type="text" class="form-control" placeholder="Введіть прізвище"
+                         v-model="profile.surname">
+                <div v-if="profileValidation?.surname !== undefined" class="invalid-feedback">
+                  {{ profileValidation.surname }}
+                </div>
+              </td>
             </tr>
             <tr>
               <td>E-mail:</td>
-              <td><input type="email" class="form-control" placeholder="Введіть email"
-                         v-model="profile.email"
-                         @change="classChange('button', 'btn-success', 'btn-primary')"></td>
+              <td class="has-validation">
+                <input type="email" class="form-control" placeholder="Введіть email"
+                       :class="profileValidation?.email === undefined? '' : 'is-invalid'"
+                         v-model="profile.email">
+                <div v-if="profileValidation?.email !== undefined" class="invalid-feedback">
+                  {{ profileValidation.email }}
+                </div>
+              </td>
+            </tr>
+            <tr>
+              <td>Номер телефону:</td>
+              <td class="has-validation">
+                <input type="text" class="form-control" placeholder="Введіть номер телефону"
+                       :class="profileValidation?.phone === undefined? '' : 'is-invalid'"
+                       v-model="profile.phone">
+                <div v-if="profileValidation?.phone !== undefined" class="invalid-feedback">
+                  {{ profileValidation.phone }}
+                </div>
+              </td>
             </tr>
             </tbody>
           </table>
@@ -65,6 +90,7 @@
 import {getProfile, saveProfileChanges} from "../../../public/js/user_worker"
 import {logout} from "../../../public/js/page/profile_page";
 import {goToMainPage} from "../../../public/js/router_worker";
+import {changeButtonClass, clearValidation} from "../../../public/js/UI_worker";
 
 export default {
   name: "ProfilePage",
@@ -79,7 +105,7 @@ export default {
         isAuthorized: false,
         isAdmin: false,
       },
-      validation: {},
+        profileValidation: {},
     }
   },
 
@@ -88,11 +114,6 @@ export default {
       if (confirm('Ви дійсно бажаєте вийти?')) {
         logout();
       }
-    },
-
-    classChange(buttonId, classFrom, classTo) {
-      let button = document.getElementById(buttonId);
-      button.className = button.className.replace(classFrom, classTo);
     },
 
     //todo import from js file maybe...
@@ -106,15 +127,17 @@ export default {
         this.profile.image = event.target.result;
       }
 
-      this.classChange("button", 'btn-success', 'btn-primary');
+      changeButtonClass("button", 'btn-success', 'btn-primary');
     },
 
 
     saveChanges() {
-      saveProfileChanges().then(profile => {
-        if (profile !== null) {
-          console.log(profile)
-          this.classChange('button', 'btn-primary', 'btn-success');
+      saveProfileChanges(this.profile).then(response => {
+        if (response.status === 200) {
+          clearValidation()
+        } else if (response.status === 422) {
+          this.profileValidation = response.data;
+          console.log(this.profileValidation)
         }
       });
     },
